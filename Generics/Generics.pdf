@@ -1,0 +1,433 @@
+Java Generics — Problems, Solutions & How They Work
+Java Generics are an important OOP concept and a common interview topic. I'll explain them from scratch, including the problem they solve, what's happening internally, and practical code examples.
+1. First, what are Generics?
+Generics allow you to write classes, interfaces, and methods that work with different data types while maintaining compile-time type safety.
+
+In simple words:
+
+Instead of writing separate code for Integer, String, Double, etc., you can write one reusable piece of code that works with different types.
+
+For example:
+ArrayList<Integer> numbers = new ArrayList<>();
+ArrayList<String> names = new ArrayList<>();
+
+
+Here:
+- Integer specifies the type of data allowed.
+- String specifies the type of data allowed.
+- < > is called the diamond brackets or angle brackets.
+- The type inside them is called a type parameter or type argument, depending on context.
+2. What problem existed before Generics?
+Let's understand the problem first.
+
+Suppose you want to store different types of values in a collection.
+
+Before Generics, Java commonly used collections with raw types.
+
+Problem 1: No compile-time type safety
+import java.util.*;
+
+public class Demo {
+    public static void main(String[] args) {
+
+        ArrayList list = new ArrayList();
+
+        list.add(100);
+        list.add("Hello");
+        list.add(10.5);
+
+        Integer num = (Integer) list.get(0);
+
+        System.out.println(num);
+    }
+}
+
+
+This code compiles, although it allows unrelated data types in the same collection.
+
+Now look at this:
+ArrayList list = new ArrayList();
+
+list.add(100);
+list.add("Hello");
+
+Integer num = (Integer) list.get(1);
+
+
+Runtime error
+It throws:
+ClassCastException
+
+
+Why?
+
+Because "Hello" is a String, and you are trying to convert it into an Integer.
+
+The compiler doesn't catch this mistake because the raw collection doesn't specify what type of data it should contain.
+3. Solution: Generics
+Generics solve this problem by specifying the data type when creating the collection.
+import java.util.*;
+
+public class Demo {
+    public static void main(String[] args) {
+
+        ArrayList<Integer> list = new ArrayList<>();
+
+        list.add(100);
+        list.add(200);
+        // list.add("Hello"); // Compile-time error
+
+        Integer num = list.get(0);
+
+        System.out.println(num);
+    }
+}
+
+
+Type-safe code
+Now Java knows that this collection can contain only Integer values.
+
+Three major advantages:
+1. Type Safety: Prevents incompatible types from being inserted.
+2. No Explicit Type Casting: You don't need to cast retrieved values.
+3. Code Reusability: One generic class or method can work with multiple data types.
+Compare:
+Without Generics	With Generics
+ArrayList list	ArrayList<Integer> list
+Allows mixed types	Restricts types
+Requires casting	No casting required
+Potential runtime errors	Many type errors caught at compile time
+
+4. How do Generics work? (Practical implementation)
+Let's create our own generic class.
+
+Example 1: Without Generics
+
+Suppose you want to create a box that stores a value.
+class Box {
+    Object value;
+
+    void setValue(Object value) {
+        this.value = value;
+    }
+
+    Object getValue() {
+        return value;
+    }
+}
+
+
+Usage:
+public class Main {
+    public static void main(String[] args) {
+
+        Box b1 = new Box();
+
+        b1.setValue(100);
+
+        Integer num = (Integer) b1.getValue();
+
+        System.out.println(num);
+    }
+}
+
+
+Problem: Object can hold almost any reference type. You must cast the returned value.
+
+Example 2: With Generics
+
+Now let's make the class generic.
+class Box<T> {
+
+    T value;
+
+    void setValue(T value) {
+        this.value = value;
+    }
+
+    T getValue() {
+        return value;
+    }
+}
+
+
+Usage:
+public class Main {
+    public static void main(String[] args) {
+
+        Box<Integer> b1 = new Box<>();
+
+        b1.setValue(100);
+
+        Integer num = b1.getValue();
+
+        System.out.println(num);
+    }
+}
+
+
+Output:
+100
+
+
+Now let's reuse the SAME class for another data type.
+Box<String> b2 = new Box<>();
+
+b2.setValue("Hello");
+
+String str = b2.getValue();
+
+System.out.println(str);
+
+
+Output:
+Hello
+
+
+How the generic class works
+**Box
+**Box
+**Box
+
+T is a placeholder. The type argument determines what T represents for each use.
+
+Understand this syntax:
+class Box<T>
+
+
+- Box = class name.
+- T = type parameter.
+- T is a placeholder for a type.
+- Box<Integer> means T represents Integer.
+- Box<String> means T represents String.
+You can technically use other names, but these conventions are common:
+Symbol	Common meaning
+T	Type
+E	Element
+K	Key
+V	Value
+N	Number
+
+5. Generic Methods
+Generics are not limited to classes. You can also create generic methods.
+
+Example:
+public class Demo {
+
+    public static <T> void display(T value) {
+        System.out.println(value);
+    }
+
+    public static void main(String[] args) {
+
+        display(100);
+        display("Hello");
+        display(10.5);
+    }
+}
+
+
+Output:
+100
+Hello
+10.5
+
+
+How does it work?
+public static <T> void display(T value)
+
+
+The <T> before the return type declares a method-level type parameter.
+
+Java infers the type from the argument:
+- display(100) → T is Integer.
+- display("Hello") → T is String.
+- display(10.5) → T is Double.
+Notice that Java uses wrapper classes for generic type arguments. You cannot write Box<int>; use Box<Integer>.
+6. Bounded Generics
+What if you want a generic class or method to accept only specific types?
+
+For example, you want to accept only numbers, not Strings.
+
+You can use extends.
+class Calculator<T extends Number> {
+
+    T value;
+
+    Calculator(T value) {
+        this.value = value;
+    }
+
+    void display() {
+        System.out.println(value);
+    }
+}
+
+
+Usage:
+public class Main {
+    public static void main(String[] args) {
+
+        Calculator<Integer> c1 = new Calculator<>(100);
+
+        Calculator<Double> c2 = new Calculator<>(10.5);
+
+        // Calculator<String> c3 = new Calculator<>("Hello");
+        // Compile-time error
+    }
+}
+
+
+Why?
+
+Number is the superclass of numeric wrapper classes such as Integer, Double, Float and Long.
+
+T extends Number restricts T to Number or its subclasses.
+7. Wildcards in Generics
+Wildcards use the ? symbol.
+
+They are useful when you want a method to accept generic collections with different type arguments.
+
+For example:
+public static void display(List<?> list) {
+
+    for (Object value : list) {
+        System.out.println(value);
+    }
+}
+
+
+Now you can pass:
+display(List.of(10, 20, 30));
+
+display(List.of("Java", "Python"));
+
+display(List.of(10.5, 20.5));
+
+
+? means an unknown type.
+
+There are three important wildcard forms:
+Syntax	Meaning
+<?>	Any type
+<? extends Number>	Number or its subclasses
+<? super Integer>	Integer or its supertypes
+
+A useful interview rule is PECS: Producer Extends, Consumer Super.
+- Use extends when you primarily read/consume values from a producer.
+- Use super when you want to add values to a consumer.
+
+8. How Generics work internally — Type Erasure
+This is an important interview concept.
+
+Java implements Generics using a mechanism called Type Erasure.
+
+In simple terms, generic type information is largely removed during compilation.
+
+For example:
+class Box<T> {
+    T value;
+
+    void setValue(T value) {
+        this.value = value;
+    }
+
+    T getValue() {
+        return value;
+    }
+}
+
+
+For an unbounded T, the compiler effectively treats the implementation approximately like this after erasure:
+class Box {
+    Object value;
+
+    void setValue(Object value) {
+        this.value = value;
+    }
+
+    Object getValue() {
+        return value;
+    }
+}
+
+
+The compiler also inserts the necessary type checks and casts where required.
+
+For bounded types, the erasure is the leftmost bound. For example, T extends Number erases to Number, not Object.
+
+Important consequences of Type Erasure:
+- You cannot use primitive types directly as generic arguments.
+- You cannot create new T() directly.
+- You generally cannot use instanceof Box<String>.
+- You cannot overload methods solely by changing their generic type arguments because of erasure.
+
+9. Real-world example: ArrayList
+You've already used this many times:
+ArrayList<Integer> numbers = new ArrayList<>();
+
+numbers.add(10);
+numbers.add(20);
+numbers.add(30);
+
+
+Internally, Java's ArrayList is a generic class.
+
+Its declaration is conceptually:
+public class ArrayList<E> {
+    // Internal implementation
+}
+
+
+Here, E represents the element type.
+
+When you write:
+ArrayList<Integer> numbers = new ArrayList<>();
+
+
+You are telling Java that this particular list should work with Integer values.
+
+That's generics working in a real Java library.
+
+10. Quick revision: Everything together
+Concept	Example	Purpose
+Generic class	class Box<T>	Reusable class
+Generic method	<T> void display(T x)	Reusable method
+Bounded generic	<T extends Number>	Restrict accepted types
+Wildcard	List<?>	Accept unknown type
+Upper bounded wildcard	List<? extends Number>	Read from Number-type producer
+Lower bounded wildcard	List<? super Integer>	Accept Integer values
+Type erasure	Generic types erased at compilation	Implementation mechanism
+
+11. Test your understanding — Java interview questions
+Let's check whether you've understood the concept instead of just memorizing definitions.
+Generics knowledge test
+Question 1 of 5
+
+
+
+
+
+
+
+What is the biggest problem Generics solve?
+
+They make Java execute faster in every situation
+
+They provide compile-time type safety and reduce casting
+
+They allow Java to support multiple inheritance
+
+They eliminate objects
+
+Previous
+Check answer
+Answered: 0/5
+My recommendation for your Java learning sequence:
+1. Generics fundamentals.
+2. Generic classes and methods.
+3. Bounded types.
+4. Wildcards and PECS.
+5. Type Erasure.
+6. Collections Framework (List, Set, Map, Queue).
+Don't jump straight into wildcards before you can independently write a generic class and generic method. That's the foundation.
